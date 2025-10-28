@@ -1,13 +1,23 @@
-from rest_framework.routers import DefaultRouter
-from .views import LessonViewSet, QuizViewSet, QuestionViewSet, BadgeViewSet
-from django.urls import path, include
-
-router = DefaultRouter()
-router.register(r'lessons', LessonViewSet)
-router.register(r'quizzes', QuizViewSet)
-router.register(r'questions', QuestionViewSet)
-router.register(r'badges', BadgeViewSet)
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('', include(router.urls)),
+    # ---------- AUTH ----------
+    path('register/', views.register_user, name='register'),
+    path('login/', views.login_user, name='login'),
+    path('logout/', views.logout_user, name='logout'),
+
+    # ---------- LESSONS ----------
+    path('lessons/', views.LessonList.as_view(), name='lesson-list'),
+    path('lessons/<int:id>/', views.LessonDetail.as_view(), name='lesson-detail'),
+
+    # ---------- QUIZZES ----------
+    path('quizzes/<int:quiz_id>/questions/', views.get_questions, name='quiz-questions'),
+    path('quizzes/<int:quiz_id>/submit/', views.submit_quiz, name='quiz-submit'),
+
+    # ---------- BADGES ----------
+    path('badges/', views.get_badges, name='badge-list'),
+
+    # ---------- PROGRESS ----------
+    path('progress/', views.get_progress, name='progress'),
 ]
