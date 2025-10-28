@@ -1,0 +1,22 @@
+[
+  {
+    "model": "main.lesson",
+    "pk": 1,
+    "fields": {
+      "title": "Right to Education",
+      "content": "According to Article 21A of the Constitution of India...",
+      "points": 10,
+      "created_at": "2025-10-28T00:00:00Z"
+    }
+  },
+  {
+    "model": "main.lesson",
+    "pk": 2,
+    "fields": {
+      "title": "Right to Protection",
+      "content": "Children have the right to be protected from abuse...",
+      "points": 15,
+      "created_at": "2025-10-28T00:00:00Z"
+    }
+  }
+]
