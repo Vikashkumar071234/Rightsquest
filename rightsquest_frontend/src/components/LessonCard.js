@@ -1,29 +1,17 @@
-// src/components/LessonCard.js
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function LessonCard({ lesson }) {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    navigate(`/lessons/${lesson.id}`);
-  };
-
   return (
-    <div
-      className="lesson-card"
-      onClick={handleClick}
-      style={{
-        border: "1px solid #ccc",
-        padding: "10px",
-        margin: "10px",
-        borderRadius: "10px",
-        cursor: "pointer",
-      }}
-    >
-      <h3>{lesson.title}</h3>
-      <p>{lesson.description}</p>
-      <p><strong>Points:</strong> {lesson.points}</p>
+    <div className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition">
+      <h2 className="text-xl font-semibold">{lesson.title}</h2>
+      <p className="text-gray-600 mt-2">{lesson.description}</p>
+      <Link
+        to={`/lessons/${lesson.id}`}
+        className="text-blue-600 font-medium mt-3 inline-block"
+      >
+        Start Lesson →
+      </Link>
     </div>
   );
 }
