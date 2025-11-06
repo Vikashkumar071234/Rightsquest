@@ -19,7 +19,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ['id', 'lesson', 'title', 'questions']
+        fields = '__all__'
 
 
 # -------------------------------
@@ -30,7 +30,7 @@ class LessonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'description', 'content', 'points', 'created_at', 'quizzes']
+        fields = '__all__'
 
 
 # -------------------------------
@@ -52,4 +52,4 @@ class ProgressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Progress
-        fields = ['id', 'user', 'lesson', 'completed', 'score', 'earned_badge']
+        fields = '__all__'

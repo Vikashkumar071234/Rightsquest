@@ -1,3 +1,4 @@
+# rightsquest_backend/main/urls.py
 from django.urls import path
 from . import views
 

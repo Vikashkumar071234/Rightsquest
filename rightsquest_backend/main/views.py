@@ -61,6 +61,9 @@ class LessonDetail(generics.RetrieveAPIView):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def get_questions(request, quiz_id):
+    """
+    Get all questions for a quiz
+    """
     try:
         quiz = Quiz.objects.get(id=quiz_id)
     except Quiz.DoesNotExist:
@@ -74,26 +77,44 @@ def get_questions(request, quiz_id):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def submit_quiz(request, quiz_id):
+    """
+    Check user answers, calculate score, and store progress
+    """
     try:
         quiz = Quiz.objects.get(id=quiz_id)
     except Quiz.DoesNotExist:
         return Response({"error": "Quiz not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    user_answers = request.data.get('answers', {})  # { "question_id": "A", ... }
+    answers = request.data.get('answers', [])  # [{"question_id":1, "answer":"A"}, ...]
+
     score = 0
-    for qid_str, answer in user_answers.items():
+    total = 0
+
+    for ans in answers:
         try:
-            q = Question.objects.get(id=int(qid_str))
-            if getattr(q, 'correct_option', None) == answer:
+            question = Question.objects.get(id=ans["question_id"], quiz=quiz)
+            total += 1
+            if ans["answer"].upper() == question.correct_answer.upper():
                 score += 1
         except Question.DoesNotExist:
             continue
 
-    # create or update Progress (assuming Progress model links user and quiz or user+lesson)
-    # adjust according to your Progress model fields
-    Progress.objects.create(user=request.user, lesson=quiz.lesson, score=score)
+    # Store user progress
+    progress, created = Progress.objects.get_or_create(
+        user=request.user,
+        lesson=quiz.lesson,
+        defaults={"score": score, "completed": True}
+    )
+    if not created:
+        progress.score = score
+        progress.completed = True
+        progress.save()
 
-    return Response({"score": score}, status=status.HTTP_200_OK)
+    return Response({
+        "score": score,
+        "total": total,
+        "message": f"You got {score} out of {total} correct!"
+    }, status=status.HTTP_200_OK)
 
 
 # ---------- BADGES ----------

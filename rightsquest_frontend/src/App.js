@@ -3,30 +3,25 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import LessonsList from "./components/LessonsList";
+import LessonDetail from "./components/LessonDetail"; // ✅ import new component
 import Quiz from "./components/Quiz";
 import Navbar from "./components/Navbar";
+import Progress from "./components/Progress";
 
-// -------------------------------
-// Private Route Wrapper
-// -------------------------------
+
 function PrivateRoute({ children }) {
-  const token = localStorage.getItem("access"); // JWT access token
+  const token = localStorage.getItem("access");
   return token ? children : <Navigate to="/login" />;
 }
 
-// -------------------------------
-// App Component
-// -------------------------------
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
-        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected Routes */}
         <Route
           path="/lessons"
           element={
@@ -36,7 +31,16 @@ function App() {
           }
         />
 
-        {/* New Quiz Route */}
+        {/* ✅ New Lesson Detail Route */}
+        <Route
+          path="/lessons/:id"
+          element={
+            <PrivateRoute>
+              <LessonDetail />
+            </PrivateRoute>
+          }
+        />
+
         <Route
           path="/lessons/:id/quiz"
           element={
@@ -46,8 +50,17 @@ function App() {
           }
         />
 
-        {/* Default Redirect */}
         <Route path="*" element={<Navigate to="/login" replace />} />
+
+        <Route
+  path="/progress"
+  element={
+    <PrivateRoute>
+      <Progress />
+    </PrivateRoute>
+  }
+/>
+
       </Routes>
     </Router>
   );
