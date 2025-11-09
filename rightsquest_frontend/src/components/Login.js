@@ -8,8 +8,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,19 +18,34 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/token/", form, {
-        headers: { "Content-Type": "application/json" },
-      });
+      // Request JWT token from backend
+      const response = await axios.post(
+        "http://localhost:8000/api/token/",
+        form,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
-      // Save JWT tokens
+      // ✅ Save JWT tokens to localStorage
       localStorage.setItem("access", response.data.access);
       localStorage.setItem("refresh", response.data.refresh);
 
-      // Redirect to lessons
+      // ✅ Redirect to lessons page
       navigate("/lessons");
     } catch (err) {
-      console.error(err);
-      setError("Invalid username or password.");
+      console.error(
+        "Login error:",
+        err.response ? err.response.data : err.message
+      );
+
+      if (err.response && err.response.status === 401) {
+        setError("Invalid username or password.");
+      } else if (err.response && err.response.status === 400) {
+        setError("Please enter valid credentials.");
+      } else {
+        setError("Server error. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -39,6 +55,7 @@ export default function Login() {
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6">🔐 Login</h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
@@ -49,6 +66,7 @@ export default function Login() {
             required
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
           />
+
           <input
             type="password"
             name="password"
@@ -58,6 +76,7 @@ export default function Login() {
             required
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
           />
+
           <button
             type="submit"
             disabled={loading}

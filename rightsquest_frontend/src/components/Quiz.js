@@ -1,112 +1,77 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import API from "../api/api";
 
 export default function Quiz() {
-  const { id } = useParams(); // lesson id
-  const [lesson, setLesson] = useState(null);
-  const [userAnswers, setUserAnswers] = useState({});
-  const [score, setScore] = useState(null);
-  const [total, setTotal] = useState(null);
-  const [correctAnswers, setCorrectAnswers] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const token = localStorage.getItem("access");
+  const { quizId } = useParams();
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [result, setResult] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/lessons/${id}/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => setLesson(data))
-      .catch((err) => console.error("Error fetching lesson:", err));
-  }, [id, token]);
+    if (!localStorage.getItem("access")) { navigate("/login"); return; }
+    API.get(`/api/quizzes/${quizId}/questions/`)
+      .then(res => setQuestions(res.data))
+      .catch(console.error);
+  }, [quizId, navigate]);
 
-  const handleAnswer = (questionId, answer) => {
-    if (!submitted) {
-      setUserAnswers({ ...userAnswers, [questionId]: answer });
-    }
-  };
+  const handleChoose = (qid, choice) => setAnswers(prev => ({ ...prev, [qid]: choice }));
 
   const handleSubmit = async () => {
-    if (!lesson || !lesson.quizzes.length) return;
-
-    const quizId = lesson.quizzes[0].id;
-
-    try {
-      const res = await fetch(`http://127.0.0.1:8000/api/quizzes/${quizId}/submit/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ answers: userAnswers }),
-      });
-
-      const data = await res.json();
-      setScore(data.score);
-      setTotal(data.total);
-      setCorrectAnswers(data.correct_answers);
-      setSubmitted(true);
-    } catch (err) {
-      console.error("Error submitting quiz:", err);
-    }
+    const payload = {
+      answers: Object.entries(answers).map(([qid, choice]) => ({
+        question_id: Number(qid),
+        answer: choice
+      }))
+    };
+    const res = await API.post(`/api/quizzes/${quizId}/submit/`, payload);
+    setResult(res.data);
   };
 
-  if (!lesson) return <p>Loading quiz...</p>;
-
-  const quiz = lesson.quizzes[0];
-  if (!quiz) return <p>No quiz available for this lesson.</p>;
+  if (result) {
+    return (
+      <div className="p-6 max-w-xl mx-auto">
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-2xl font-bold mb-2">Quiz Result</h2>
+          <p className="mb-1">Score: {result.score}/{result.total} ({result.percent}%)</p>
+          <p className="mb-1">🎯 Points earned: <strong>{result.points_earned}</strong></p>
+          <p className="mb-4">Your total points for this lesson: {result.new_xp_total}</p>
+          <button onClick={() => navigate("/progress")} className="px-4 py-2 bg-blue-600 text-white rounded-lg">View Progress</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">{quiz.title}</h2>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Quiz</h1>
+      <div className="space-y-5">
+        {questions.map((q, idx) => (
+          <div key={q.id} className="bg-white p-5 rounded-xl shadow">
+            <p className="font-semibold mb-3">{idx + 1}. {q.question_text}</p>
+            {['A','B','C','D'].map(opt => (
+              <label key={opt} className="block mb-2">
+                <input
+                  type="radio"
+                  name={`q-${q.id}`}
+                  checked={answers[q.id] === opt}
+                  onChange={() => handleChoose(q.id, opt)}
+                  className="mr-2"
+                />
+                {q[`option_${opt.toLowerCase()}`]}
+              </label>
+            ))}
+          </div>
+        ))}
+      </div>
 
-      {quiz.questions.map((q) => (
-        <div key={q.id} className="mb-4 p-4 border rounded">
-          <p className="font-semibold mb-2">{q.question_text}</p>
-          {["A", "B", "C", "D"].map((opt) => {
-            const optionText = q[`option_${opt.toLowerCase()}`];
-            let optionClass = "block w-full text-left p-2 border rounded mb-1";
-
-            if (submitted) {
-              if (correctAnswers[q.id] === opt) optionClass += " bg-green-200";
-              else if (userAnswers[q.id] === opt) optionClass += " bg-red-200";
-            } else if (userAnswers[q.id] === opt) {
-              optionClass += " bg-blue-100";
-            }
-
-            return (
-              <button
-                key={opt}
-                className={optionClass}
-                onClick={() => handleAnswer(q.id, opt)}
-                disabled={submitted}
-              >
-                {optionText}
-                {submitted && correctAnswers[q.id] === opt && " ✅"}
-                {submitted &&
-                  userAnswers[q.id] === opt &&
-                  correctAnswers[q.id] !== opt &&
-                  " ❌"}
-              </button>
-            );
-          })}
-        </div>
-      ))}
-
-      {!submitted ? (
-        <button
-          onClick={handleSubmit}
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          Submit Quiz
-        </button>
-      ) : (
-        <div className="mt-4 text-lg font-semibold">
-          🎯 Your Score: {score}/{total}
-        </div>
-      )}
+      <button
+        onClick={handleSubmit}
+        className="mt-6 px-5 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700"
+      >
+        Submit Quiz
+      </button>
     </div>
   );
 }

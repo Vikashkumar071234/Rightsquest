@@ -1,57 +1,41 @@
-// src/components/LessonDetail.js
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import API from "../api/api";
 
 export default function LessonDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [lesson, setLesson] = useState(null);
-  const token = localStorage.getItem("access");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/lessons/${id}/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (res.status === 401) {
-          alert("Unauthorized. Please log in again.");
-          navigate("/login");
-        }
-        return res.json();
-      })
-      .then((data) => setLesson(data))
-      .catch((err) => console.error("Error fetching lesson:", err));
-  }, [id, token, navigate]);
+    if (!localStorage.getItem("access")) { navigate("/login"); return; }
+    API.get(`/api/lessons/${id}/`).then(res => setLesson(res.data)).catch(console.error);
+  }, [id, navigate]);
 
-  if (!lesson) return <p>Loading lesson...</p>;
+  if (!lesson) return <div className="p-6">Loading...</div>;
+
+  const firstQuiz = lesson.quizzes?.[0];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>{lesson.title}</h2>
-      <p><strong>Description:</strong> {lesson.description}</p>
-      <p><strong>Content:</strong> {lesson.content}</p>
-      <p><strong>Points:</strong> {lesson.points}</p>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-2">{lesson.title}</h1>
+      <p className="text-gray-600 mb-6">{lesson.description}</p>
+      <div className="bg-white p-5 rounded-xl shadow">
+        <p className="whitespace-pre-wrap">{lesson.content}</p>
+      </div>
 
-      {lesson.quizzes && lesson.quizzes.length > 0 ? (
+      {firstQuiz && (
         <button
-          onClick={() => navigate(`/lessons/${lesson.id}/quiz`)}
-          style={{
-            marginTop: "20px",
-            padding: "10px 20px",
-            borderRadius: "8px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
-          }}
+          onClick={() => navigate(`/quiz/${firstQuiz.id}`)}
+          className="mt-6 px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700"
         >
           Start Quiz
         </button>
-      ) : (
-        <p>No quizzes available for this lesson yet.</p>
       )}
+
+      <div className="mt-6">
+        <Link to="/lessons" className="text-blue-600">← Back to lessons</Link>
+      </div>
     </div>
   );
 }

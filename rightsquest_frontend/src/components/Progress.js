@@ -1,61 +1,36 @@
 import React, { useEffect, useState } from "react";
+import API from "../api/api";
 
 export default function Progress() {
-  const [progress, setProgress] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("access");
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
-    const fetchProgress = async () => {
-      try {
-        const response = await fetch("http://127.0.0.1:8000/api/progress/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    API.get("/api/progress/").then(res => setItems(res.data)).catch(console.error);
+  }, []);
 
-        const data = await response.json();
-        console.log("Progress data received:", data); // 👈 Helps debug
-
-        // ✅ If the backend returns an object, convert it into an array
-        if (Array.isArray(data)) {
-          setProgress(data);
-        } else if (data.results) {
-          // In case backend sends paginated response (Django REST Framework)
-          setProgress(data.results);
-        } else {
-          setProgress([]);
-          console.warn("Unexpected progress data format:", data);
-        }
-      } catch (error) {
-        console.error("Error fetching progress:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProgress();
-  }, [token]);
-
-  if (loading) {
-    return <p className="p-6">Loading your progress...</p>;
-  }
+  const totalXP = items.reduce((sum, it) => sum + (it.xp || 0), 0);
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">📈 Your Learning Progress</h2>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4">Your Progress</h1>
+      <div className="bg-white p-5 rounded-xl shadow mb-6">
+        <p className="text-lg">🎯 Total Points: <strong>{totalXP}</strong></p>
+      </div>
 
-      {progress.length === 0 ? (
-        <p>No progress yet. Start learning!</p>
-      ) : (
-        progress.map((p, i) => (
-          <div key={i} className="p-4 mb-3 bg-gray-100 rounded shadow">
-            <h3 className="font-semibold">Lesson: {p.lesson_title || "N/A"}</h3>
-            <p>Score: {p.score}</p>
-            <p>Date: {p.created_at ? new Date(p.created_at).toLocaleDateString() : "N/A"}</p>
+      <div className="space-y-4">
+        {items.map(it => (
+          <div key={it.id} className="bg-white p-4 rounded-xl shadow">
+            <div className="flex justify-between mb-2">
+              <span className="font-semibold">{it.lesson_title}</span>
+              <span>{it.progress_pct}% {it.completed ? '✅' : ''}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="h-3 bg-blue-600 rounded-full" style={{ width: `${it.progress_pct}%` }} />
+            </div>
+            <div className="text-sm text-gray-600 mt-2">Points: {it.xp}</div>
           </div>
-        ))
-      )}
+        ))}
+      </div>
     </div>
   );
 }

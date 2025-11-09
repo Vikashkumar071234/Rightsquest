@@ -1,23 +1,24 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# -------------------------------
-# Lesson Model
-# -------------------------------
+
+# --------------------------------------------------
+# LESSON MODEL
+# --------------------------------------------------
 class Lesson(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     content = models.TextField()
-    points = models.IntegerField(default=10)
+    points = models.IntegerField(default=10)  # Maximum points for completing this lesson
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
 
-# -------------------------------
-# Quiz Model
-# -------------------------------
+# --------------------------------------------------
+# QUIZ MODEL
+# --------------------------------------------------
 class Quiz(models.Model):
     lesson = models.ForeignKey(
         Lesson,
@@ -30,9 +31,9 @@ class Quiz(models.Model):
         return f"{self.lesson.title} - {self.title}"
 
 
-# -------------------------------
-# Question Model
-# -------------------------------
+# --------------------------------------------------
+# QUESTION MODEL
+# --------------------------------------------------
 class Question(models.Model):
     quiz = models.ForeignKey(
         Quiz,
@@ -58,9 +59,9 @@ class Question(models.Model):
         return f"{self.quiz.title} - {self.question_text}"
 
 
-# -------------------------------
-# Badge Model
-# -------------------------------
+# --------------------------------------------------
+# BADGE MODEL
+# --------------------------------------------------
 class Badge(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -71,14 +72,16 @@ class Badge(models.Model):
         return self.name
 
 
-# -------------------------------
-# Progress Model
-# -------------------------------
+# --------------------------------------------------
+# PROGRESS MODEL
+# --------------------------------------------------
 class Progress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     completed = models.BooleanField(default=False)
-    score = models.IntegerField(default=0)
+    score = models.IntegerField(default=0)  # raw correct count
+    xp = models.IntegerField(default=0)  # 🎯 total points earned
+    progress_pct = models.PositiveIntegerField(default=0)  # 0..100
     earned_badge = models.ForeignKey(
         Badge,
         on_delete=models.SET_NULL,
@@ -88,7 +91,8 @@ class Progress(models.Model):
 
     class Meta:
         unique_together = ('user', 'lesson')
+        verbose_name_plural = "Progress Records"
 
     def __str__(self):
-        status = 'Completed' if self.completed else 'In Progress'
+        status = "Completed" if self.completed else "In Progress"
         return f"{self.user.username} - {self.lesson.title} ({status})"
