@@ -6,16 +6,20 @@ export default function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
     navigate("/login");
   };
 
   return (
-    <nav className="flex items-center justify-between p-4 bg-blue-600 text-white">
+    <nav className="bg-blue-600 text-white px-6 py-3 flex justify-between items-center shadow-md">
       <h1 className="text-xl font-bold">RightsQuest</h1>
-      <div className="flex gap-4">
+      <div className="flex items-center space-x-6">
         <Link to="/lessons" className="hover:underline">Lessons</Link>
-        <Link to="/progress">Progress</Link>
-        <button onClick={handleLogout} className="hover:underline">
+        <Link to="/progress" className="hover:underline">Progress</Link>
+        <button
+          onClick={handleLogout}
+          className="hover:underline text-white"
+        >
           Logout
         </button>
       </div>

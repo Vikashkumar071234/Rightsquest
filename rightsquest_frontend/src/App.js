@@ -1,16 +1,22 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Login from "./components/Login";
+import Signup from "./components/Signup";
 import LessonsList from "./components/LessonsList";
 import LessonDetail from "./components/LessonDetail";
 import Quiz from "./components/Quiz";
 import Progress from "./components/Progress";
-import Signup from "./components/Signup"; // if you have it
 
-export default function App() {
+function Layout() {
+  const location = useLocation();
+
+  // Hide Navbar only on login & signup pages
+  const hideNavbar =
+    location.pathname === "/login" || location.pathname === "/signup";
+
   return (
-    <BrowserRouter>
-      <Navbar />
+    <>
+      {!hideNavbar && <Navbar />}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -18,8 +24,17 @@ export default function App() {
         <Route path="/lessons/:id" element={<LessonDetail />} />
         <Route path="/quiz/:quizId" element={<Quiz />} />
         <Route path="/progress" element={<Progress />} />
-        <Route path="*" element={<LessonsList />} />
+        {/* Default route: open login */}
+        <Route path="*" element={<Login />} />
       </Routes>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Layout />
     </BrowserRouter>
   );
 }
