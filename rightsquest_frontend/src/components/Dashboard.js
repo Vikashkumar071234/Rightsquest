@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 export default function Dashboard() {
   const [stats, setStats] = useState({ xp: 0, completed: 0 });
   const navigate = useNavigate();
+  const username = localStorage.getItem("username") || "Learner";
 
   useEffect(() => {
     API.get("/api/progress/")
@@ -19,6 +20,7 @@ export default function Dashboard() {
   }, []);
 
   const level = Math.floor(stats.xp / 50) + 1; // 🎯 Level system (50 XP per level)
+  const xpProgress = ((stats.xp % 50) / 50) * 100; // percentage for XP bar
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 p-8 flex items-center justify-center">
@@ -30,10 +32,12 @@ export default function Dashboard() {
       >
         {/* Header */}
         <h1 className="text-4xl font-extrabold mb-3 text-blue-700">
-          Welcome Back 👋
+          Welcome Back, {username}! 👋
         </h1>
         <p className="text-gray-600 mb-8 text-lg">
-          Keep learning and level up your <span className="font-semibold text-blue-600">RightsQuest</span> journey!
+          Keep learning and level up your{" "}
+          <span className="font-semibold text-blue-600">RightsQuest</span>{" "}
+          journey!
         </p>
 
         {/* Stats Cards */}
@@ -41,17 +45,21 @@ export default function Dashboard() {
           {/* Lessons Completed */}
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="p-6 bg-blue-100 rounded-2xl shadow-inner hover:shadow-lg hover:shadow-blue-200 transition"
+            className="p-6 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl shadow-inner hover:shadow-lg hover:shadow-blue-200 transition"
           >
             <Trophy className="w-10 h-10 mx-auto text-yellow-500 mb-3" />
-            <h3 className="text-3xl font-bold text-blue-700">{stats.completed}</h3>
-            <p className="text-gray-600 font-medium mt-1">Lessons Completed</p>
+            <h3 className="text-3xl font-bold text-blue-700">
+              {stats.completed}
+            </h3>
+            <p className="text-gray-600 font-medium mt-1">
+              Lessons Completed
+            </p>
           </motion.div>
 
           {/* Total XP Earned */}
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="p-6 bg-green-100 rounded-2xl shadow-inner hover:shadow-lg hover:shadow-green-200 transition"
+            className="p-6 bg-gradient-to-br from-green-100 to-green-50 rounded-2xl shadow-inner hover:shadow-lg hover:shadow-green-200 transition"
           >
             <Star className="w-10 h-10 mx-auto text-yellow-500 mb-3" />
             <h3 className="text-3xl font-bold text-green-700">{stats.xp} XP</h3>
@@ -61,12 +69,29 @@ export default function Dashboard() {
           {/* Level */}
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="p-6 bg-purple-100 rounded-2xl shadow-inner hover:shadow-lg hover:shadow-purple-200 transition"
+            className="p-6 bg-gradient-to-br from-purple-100 to-purple-50 rounded-2xl shadow-inner hover:shadow-lg hover:shadow-purple-200 transition"
           >
             <BookOpen className="w-10 h-10 mx-auto text-purple-600 mb-3" />
-            <h3 className="text-3xl font-bold text-purple-700">Level {level}</h3>
+            <h3 className="text-3xl font-bold text-purple-700">
+              Level {level}
+            </h3>
             <p className="text-gray-600 font-medium mt-1">Current Rank</p>
           </motion.div>
+        </div>
+
+        {/* XP Progress Bar */}
+        <div className="max-w-lg mx-auto mt-4 text-left">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <motion.div
+              className="bg-blue-600 h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${xpProgress}%` }}
+              transition={{ duration: 1 }}
+            ></motion.div>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Progress to next level: {Math.round(xpProgress)}%
+          </p>
         </div>
 
         {/* Continue Learning Button */}
@@ -77,7 +102,7 @@ export default function Dashboard() {
           }}
           whileTap={{ scale: 0.97 }}
           onClick={() => navigate("/lessons")}
-          className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-md text-lg"
+          className="mt-8 bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-300 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 text-lg"
         >
           Continue Learning →
         </motion.button>
