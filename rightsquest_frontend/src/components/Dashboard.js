@@ -21,42 +21,66 @@ export default function Dashboard() {
   const level = Math.floor(stats.xp / 50) + 1; // 🎯 Level system (50 XP per level)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 p-8 flex items-center justify-center">
       <motion.div
-        className="max-w-4xl mx-auto bg-white p-8 rounded-3xl shadow-xl text-center"
-        initial={{ opacity: 0, y: 30 }}
+        className="max-w-4xl w-full bg-white p-10 rounded-3xl shadow-2xl text-center hover:shadow-blue-200 transition-all duration-300"
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
+        transition={{ duration: 0.6 }}
       >
-        <h1 className="text-3xl font-extrabold mb-4 text-blue-700">Welcome Back 👋</h1>
-        <p className="text-gray-600 mb-6">Keep learning and level up your RightsQuest journey!</p>
+        {/* Header */}
+        <h1 className="text-4xl font-extrabold mb-3 text-blue-700">
+          Welcome Back 👋
+        </h1>
+        <p className="text-gray-600 mb-8 text-lg">
+          Keep learning and level up your <span className="font-semibold text-blue-600">RightsQuest</span> journey!
+        </p>
 
-        <div className="grid sm:grid-cols-3 gap-6 mb-8">
-          <motion.div className="p-6 bg-blue-100 rounded-xl shadow-inner">
-            <Trophy className="w-10 h-10 mx-auto text-yellow-500 mb-2" />
-            <h3 className="text-xl font-bold">{stats.completed}</h3>
-            <p className="text-gray-600">Lessons Completed</p>
+        {/* Stats Cards */}
+        <div className="grid sm:grid-cols-3 gap-8 mb-10">
+          {/* Lessons Completed */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="p-6 bg-blue-100 rounded-2xl shadow-inner hover:shadow-lg hover:shadow-blue-200 transition"
+          >
+            <Trophy className="w-10 h-10 mx-auto text-yellow-500 mb-3" />
+            <h3 className="text-3xl font-bold text-blue-700">{stats.completed}</h3>
+            <p className="text-gray-600 font-medium mt-1">Lessons Completed</p>
           </motion.div>
 
-          <motion.div className="p-6 bg-green-100 rounded-xl shadow-inner">
-            <Star className="w-10 h-10 mx-auto text-yellow-500 mb-2" />
-            <h3 className="text-xl font-bold">{stats.xp} XP</h3>
-            <p className="text-gray-600">Total XP Earned</p>
+          {/* Total XP Earned */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="p-6 bg-green-100 rounded-2xl shadow-inner hover:shadow-lg hover:shadow-green-200 transition"
+          >
+            <Star className="w-10 h-10 mx-auto text-yellow-500 mb-3" />
+            <h3 className="text-3xl font-bold text-green-700">{stats.xp} XP</h3>
+            <p className="text-gray-600 font-medium mt-1">Total XP Earned</p>
           </motion.div>
 
-          <motion.div className="p-6 bg-purple-100 rounded-xl shadow-inner">
-            <BookOpen className="w-10 h-10 mx-auto text-purple-600 mb-2" />
-            <h3 className="text-xl font-bold">Level {level}</h3>
-            <p className="text-gray-600">Current Rank</p>
+          {/* Level */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="p-6 bg-purple-100 rounded-2xl shadow-inner hover:shadow-lg hover:shadow-purple-200 transition"
+          >
+            <BookOpen className="w-10 h-10 mx-auto text-purple-600 mb-3" />
+            <h3 className="text-3xl font-bold text-purple-700">Level {level}</h3>
+            <p className="text-gray-600 font-medium mt-1">Current Rank</p>
           </motion.div>
         </div>
 
-        <button
+        {/* Continue Learning Button */}
+        <motion.button
+          whileHover={{
+            scale: 1.05,
+            boxShadow: "0px 0px 20px rgba(37, 99, 235, 0.4)",
+          }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => navigate("/lessons")}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-md"
+          className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-md text-lg"
         >
           Continue Learning →
-        </button>
+        </motion.button>
       </motion.div>
     </div>
   );
