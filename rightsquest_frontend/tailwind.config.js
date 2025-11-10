@@ -8,3 +8,10 @@ module.exports = {
   },
   plugins: [],
 }
+
+module.exports = {
+  darkMode: "class", // ✅ enables dark mode
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  theme: { extend: {} },
+  plugins: [],
+};

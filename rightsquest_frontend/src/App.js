@@ -34,6 +34,7 @@ function Layout() {
         <Route path="/progress" element={<PrivateRoute><Progress /></PrivateRoute>} />
 <Route path="/badges" element={<PrivateRoute><BadgeList /></PrivateRoute>} />
 
+
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
