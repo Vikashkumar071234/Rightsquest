@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Optional: You can add a global background color */
+body {
+  @apply bg-gray-50 text-gray-900;
+}
+body {
+  font-family: 'Poppins', sans-serif;
+}

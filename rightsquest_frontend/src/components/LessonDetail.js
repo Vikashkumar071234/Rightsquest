@@ -1,140 +1,80 @@
 import React, { useEffect, useState } from "react";
 import API from "../api/api";
 import { motion } from "framer-motion";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function LessonDetail() {
   const { id } = useParams();
   const [lesson, setLesson] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [started, setStarted] = useState(false);
-  const [answers, setAnswers] = useState({});
-  const [result, setResult] = useState(null);
+  const navigate = useNavigate();
 
-  // Fetch lesson details
+  // ✅ Fetch lesson details from backend
   useEffect(() => {
     API.get(`/api/lessons/${id}/`)
       .then((res) => setLesson(res.data))
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("Lesson fetch error:", err));
   }, [id]);
 
-  // Fetch questions when quiz starts
-  const startQuiz = () => {
-    setStarted(true);
-    API.get(`/api/quizzes/${lesson.quizzes[0].id}/questions/`)
-      .then((res) => setQuestions(res.data))
-      .catch((err) => console.error(err));
-  };
+  if (!lesson) return <p className="text-center mt-10">Loading lesson...</p>;
 
-  const handleAnswer = (qId, ans) => {
-    setAnswers({ ...answers, [qId]: ans });
-  };
+  const quizId = lesson.quizzes?.[0]?.id;
 
-  const submitQuiz = async () => {
-    const payload = {
-      answers: Object.entries(answers).map(([question_id, answer]) => ({
-        question_id,
-        answer,
-      })),
-    };
-
-    try {
-      const res = await API.post(
-        `/api/quizzes/${lesson.quizzes[0].id}/submit/`,
-        payload
-      );
-      setResult(res.data);
-    } catch (err) {
-      console.error("Submit error:", err);
-      alert("Error submitting quiz.");
+  // ✅ Handle missing quiz
+  const handleStartQuiz = () => {
+    if (quizId) {
+      navigate(`/quiz/${quizId}`);
+    } else {
+      toast.error("🚫 No quiz available for this lesson yet!");
     }
   };
-
-  if (!lesson) return <p className="text-center mt-10">Loading...</p>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-8">
       <motion.div
-        className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-xl"
+        className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-2xl"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6 }}
       >
-        <h1 className="text-3xl font-bold text-blue-700 mb-4">
-          {lesson.title}
-        </h1>
-        <p className="text-gray-600 mb-6">{lesson.description}</p>
+        {/* 🔹 Lesson Header Banner */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-400 text-white p-6 rounded-xl mb-6 shadow-lg">
+          <h1 className="text-3xl font-extrabold">{lesson.title}</h1>
+          <p className="text-blue-100 mt-2">{lesson.description}</p>
+        </div>
 
-        {!started && !result && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-700 transition"
-            onClick={startQuiz}
-          >
-            🚀 Start Quiz
-          </motion.button>
-        )}
+        {/* 🔹 Lesson Metadata */}
+        <div className="text-sm text-gray-500 mb-4 flex justify-between">
+          <span>🎯 Points: {lesson.points}</span>
+          <span>
+            📅 Added:{" "}
+            {new Date(lesson.created_at).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+        </div>
 
-        {started && !result && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            {questions.map((q, index) => (
-              <div key={q.id} className="mb-6">
-                <h3 className="font-semibold text-gray-800">
-                  {index + 1}. {q.question_text}
-                </h3>
-                {["A", "B", "C", "D"].map((opt) => (
-                  <label key={opt} className="block mt-1">
-                    <input
-                      type="radio"
-                      name={`q${q.id}`}
-                      value={opt}
-                      onChange={() => handleAnswer(q.id, opt)}
-                      checked={answers[q.id] === opt}
-                    />
-                    <span className="ml-2 text-gray-700">
-                      {q[`option_${opt.toLowerCase()}`]}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            ))}
+        {/* 🔹 Lesson Content Box */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-6 shadow-inner">
+          <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+            {lesson.content}
+          </p>
+        </div>
 
-            <motion.button
-              onClick={submitQuiz}
-              whileHover={{ scale: 1.05 }}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700"
-            >
-              ✅ Submit Quiz
-            </motion.button>
-          </motion.div>
-        )}
-
-        {result && (
-          <motion.div
-            className="text-center mt-8 bg-blue-50 p-6 rounded-xl shadow-inner"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <h2 className="text-2xl font-bold text-green-700 mb-2">
-              🎉 Quiz Completed!
-            </h2>
-            <p className="text-gray-700">
-              You scored <strong>{result.score}</strong> out of{" "}
-              <strong>{result.total}</strong> ({result.percent}%)
-            </p>
-            <p className="text-gray-600 mt-2">
-              🎯 Points earned: <strong>{result.points_earned}</strong>
-            </p>
-            <p className="text-gray-500 text-sm mt-1">
-              Total XP: {result.new_xp_total}
-            </p>
-          </motion.div>
-        )}
+        {/* 🔹 Start Quiz Button */}
+        <motion.button
+          whileHover={{
+            scale: 1.05,
+            boxShadow: "0px 0px 20px rgba(37, 99, 235, 0.6)",
+          }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleStartQuiz}
+          className="mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition"
+        >
+          🚀 Start Quiz →
+        </motion.button>
       </motion.div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
@@ -6,26 +6,34 @@ import LessonsList from "./components/LessonsList";
 import LessonDetail from "./components/LessonDetail";
 import Quiz from "./components/Quiz";
 import Progress from "./components/Progress";
+import Dashboard from "./components/Dashboard";
+import { isLoggedIn } from "./utils/auth";
+
+function PrivateRoute({ children }) {
+  return isLoggedIn() ? children : <Navigate to="/login" replace />;
+}
 
 function Layout() {
   const location = useLocation();
-
-  // Hide Navbar only on login & signup pages
-  const hideNavbar =
-    location.pathname === "/login" || location.pathname === "/signup";
+  const hideNavbar = location.pathname === "/login" || location.pathname === "/signup";
 
   return (
     <>
       {!hideNavbar && <Navbar />}
       <Routes>
+        {/* public */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/lessons" element={<LessonsList />} />
-        <Route path="/lessons/:id" element={<LessonDetail />} />
-        <Route path="/quiz/:quizId" element={<Quiz />} />
-        <Route path="/progress" element={<Progress />} />
-        {/* Default route: open login */}
-        <Route path="*" element={<Login />} />
+
+        {/* private */}
+        <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/lessons" element={<PrivateRoute><LessonsList /></PrivateRoute>} />
+        <Route path="/lessons/:id" element={<PrivateRoute><LessonDetail /></PrivateRoute>} />
+        <Route path="/quiz/:quizId" element={<PrivateRoute><Quiz /></PrivateRoute>} />
+        <Route path="/progress" element={<PrivateRoute><Progress /></PrivateRoute>} />
+
+        {/* fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );

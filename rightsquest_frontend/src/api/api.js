@@ -1,11 +1,11 @@
 import axios from "axios";
 
-// ✅ Use localhost (not 127.0.0.1) — avoids CORS issues on Windows
 const API = axios.create({
-  baseURL: "http://localhost:8000", 
+  baseURL: process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000",
+  headers: { "Content-Type": "application/json" },
 });
 
-// ✅ Automatically attach JWT access token to every request
+// ✅ Attach JWT access token automatically to all requests
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access");
@@ -17,15 +17,15 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ Optional: Global error handler for expired tokens or unauthorized access
+// ✅ Handle token expiry (401 Unauthorized)
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      console.warn("⚠️ Token expired or unauthorized — redirecting to login...");
+    if (error.response?.status === 401) {
+      console.warn("⚠️ Token expired or invalid — redirecting to login...");
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
-      window.location.href = "/login"; // Force redirect to login page
+      window.location.href = "/login"; // Redirect user to login
     }
     return Promise.reject(error);
   }
