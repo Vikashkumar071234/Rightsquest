@@ -8,6 +8,7 @@ import Quiz from "./components/Quiz";
 import Progress from "./components/Progress";
 import Dashboard from "./components/Dashboard";
 import { isLoggedIn } from "./utils/auth";
+import BadgeList from "./components/BadgeList";
 
 function PrivateRoute({ children }) {
   return isLoggedIn() ? children : <Navigate to="/login" replace />;
@@ -31,6 +32,7 @@ function Layout() {
         <Route path="/lessons/:id" element={<PrivateRoute><LessonDetail /></PrivateRoute>} />
         <Route path="/quiz/:quizId" element={<PrivateRoute><Quiz /></PrivateRoute>} />
         <Route path="/progress" element={<PrivateRoute><Progress /></PrivateRoute>} />
+<Route path="/badges" element={<PrivateRoute><BadgeList /></PrivateRoute>} />
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

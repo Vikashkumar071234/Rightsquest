@@ -109,7 +109,7 @@ def submit_quiz(request, quiz_id):
     score = 0
     total = 0
 
-    # Calculate score
+    # ✅ Calculate quiz score
     for ans in answers:
         try:
             q = Question.objects.get(id=ans["question_id"], quiz=quiz)
@@ -123,7 +123,7 @@ def submit_quiz(request, quiz_id):
     lesson = quiz.lesson
     points_earned = lesson.points if percent >= 70 else round(lesson.points / 2)
 
-    # Update progress
+    # ✅ Update or create progress record
     progress, _ = Progress.objects.get_or_create(user=request.user, lesson=lesson)
     progress.score = score
     progress.xp += points_earned
@@ -131,6 +131,35 @@ def submit_quiz(request, quiz_id):
     progress.completed = percent >= 70
     progress.save()
 
+    # =========================================================
+    # 🏅 BADGE SYSTEM
+    # =========================================================
+
+    completed_lessons = Progress.objects.filter(user=request.user, completed=True).count()
+
+    # 1️⃣ Badge: 100 XP Achiever
+    if progress.xp >= 100 and not Badge.objects.filter(code="first100").exists():
+        badge = Badge.objects.create(
+            name="💪 100 XP Achiever",
+            code="first100",
+            description="Earned 100 XP through learning!"
+        )
+        progress.earned_badge = badge
+        progress.save()
+
+    # 2️⃣ Badge: 3 Lessons Completed
+    if completed_lessons >= 3 and not Badge.objects.filter(code="triplelearn").exists():
+        badge = Badge.objects.create(
+            name="📘 Triple Learner",
+            code="triplelearn",
+            description="Completed 3 lessons successfully!"
+        )
+        progress.earned_badge = badge
+        progress.save()
+
+    # =========================================================
+    # ✅ RETURN RESPONSE
+    # =========================================================
     return Response(
         {
             "score": score,

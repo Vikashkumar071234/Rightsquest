@@ -15,6 +15,8 @@ export default function Navbar() {
       <div className="flex items-center gap-6">
         <Link to="/lessons" className="hover:underline">Lessons</Link>
         <Link to="/progress" className="hover:underline">Progress</Link>
+        <Link to="/badges" className="hover:underline">Badges</Link>
+
         <button onClick={handleLogout} className="hover:underline">Logout</button>
       </div>
     </nav>
